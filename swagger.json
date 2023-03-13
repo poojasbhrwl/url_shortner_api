@@ -1,0 +1,147 @@
+{
+    "swagger": "2.0",
+    "title" : "APIS",
+    "description" : "APIS",
+    "basePath": "/",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0",
+    "securityDefinitions":{
+      "basicAuth": {
+          "type": "basic"
+      }
+    },
+    "produces": ["application/json"],
+    "paths" :{
+      "/auth/register": {
+        "post": {
+          "tags": ["Users"],
+          "summary": "Register new user",  
+          "parameters": [
+            {
+              "name": "register",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/register"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/auth/login": {
+        "post": {
+          "tags": ["Users"],
+          "summary": "Login user", 
+          "parameters": [
+            {
+              "name": "login",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/login"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/": {
+        "post": {
+          "tags": ["Url"],
+          "summary": "Create new url", 
+          "parameters": [
+            {
+              "name": "authorization",
+              "in": "header",
+              "description": "Bearer token"
+            },
+            {
+              "name": "url",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/url"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/{code}": {
+        "get": {
+          "tags": ["Url"],
+          "summary": "Get long url",
+          "parameters": [
+            {
+              "name": "authorization",
+              "in": "header",
+              "description": "Bearer token"
+            },
+            {
+              "name": "code",
+              "in": "path",
+              "description": "Url code"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      }
+    },
+    "definitions":{
+      "register": {
+        "required": ["name", "email","password","role"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["Admin","User"],
+            "description": "Admin OR User"
+          }
+        }
+      },
+      "login": {
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "url": {
+        "required": ["originalUrl"],
+        "properties": {
+          "originalUrl": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
