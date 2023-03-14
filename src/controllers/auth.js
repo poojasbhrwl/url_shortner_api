@@ -1,54 +1,46 @@
 import { Users } from '../models/users.model'
-import { registerUsersValidation, loginValidation } from '../validations/users.validation'
 import { JwtHelpers } from '../helpers/jwt.helper'
 
-export const registerUsers = async (request) => {
-  const response = {status: 201}
+export const registerUsers = async (req, res, next) => {
   try {
-    const validate = await registerUsersValidation(request)  // validate request params
-    let alreadyExist = await Users.findOne({email: validate.email})  // check already exists with same email
+    const request = req.body
+    const alreadyExist = await Users.findOne({email: request.email})  // check already exists with same email
     if(alreadyExist && alreadyExist._id) {
-      response.status = 500
-      response.data = await alreadyExist.toJSON()
-      response.error = {message: "User already exists"}  // return response if already exists
+      const data = { data: await alreadyExist.toJSON(), message: "User already exists"}
+      res.status(409).send(data); // return response if already exists
     } else {
-      const data = await new Users(validate);  // create object for user
-      let userData = await data.save();  // save the data
-      response.data = await userData.toJSON()
+      const data = await new Users(request);  // create object for user
+      const userData = await data.save();  // save the data
+      const resp = { data: await userData.toJSON(), message: "Registered successfully"}
+      return res.status(201).send(resp) // return response after registration
     }
   } catch (e ) {
-    console.log(e)
-    response.status = 500
-    response.error = e
+    return res.status(500).send({error: e, message: "Something went wrong"})  // return response if error
   }
-  return response;  // return response
 }
   
   // create function for login users
-export const login = async (request) => {
-    
-  const response = {status: 200}
+export const login = async (req, res) => {
   try {
-    const validate = await loginValidation(request)  // validate request body
-    let userData = await Users.findOne({email: validate.email})  // check user exists with email
+    const request = req.body
+    let userData = await Users.findOne({email: request.email})  // check user exists with email
     if(!userData) {
-      response.status = 500
-      response.error = {message: "User doesn't exists"}  // return response if doesn't exists
+      const data = { data: {}, message: "User doesn't exists"}
+      return res.status(404).send(data) // return response if doesn't exists
     } else {
-      let comparison = await userData.comparePassword(validate.password);
+      let comparison = await userData.comparePassword(request.password);
       if(comparison) {
-        response.token = JwtHelpers({ id: userData._id, role: userData.role }, '1d'),
-        response.user = await userData.toJSON();
-        response.message = 'Login successfully'
+        const user = await userData.toJSON()
+        const token = JwtHelpers({ id: user._id, role: user.role }, '7d')
+        const data = { data: userData, token: token,  message: "Logged in successfully"}
+        return res.status(200).send(data) 
       } else {
-        response.status = 500
-        response.error = {message: "Wrong password"}  // return response if wrong password
+        const data = {data: {}, message: "Wrong password"}  // return response if wrong password
+        return res.status(403).send(data)
       }
     }
   } catch (e) {
-    response.status = 500
-    response.error = e
+    return res.status(500).send({error: e, message: "Something went wrong"}) // return response if error
   }
-  return response;  // return response
 }
 

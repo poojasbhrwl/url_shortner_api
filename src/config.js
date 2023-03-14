@@ -8,6 +8,6 @@ export const connect = () => {
          console.log('Database connection successful')
        })
        .catch((err) => {
-         console.error('Database connection error',err)
+         console.log('Database connection error',err)
        })
   }

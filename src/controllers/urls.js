@@ -1,49 +1,41 @@
-import { Urls } from '../models/urls.model'
-import { urlValidation } from '../validations/urls.validation'
-import shortId from 'shortid'
+import { Urls } from '../models/urls.model';
+import shortId from 'shortid';
 
-export const getUrl = async (request) => {
-  const response = {status: 200}
+// function for get url
+export const getUrl = async (req, res) => {
   try {
-      var data = await Urls.findOne({code: request.code})   // get url data
+      var data = await Urls.findOne({code: req.params.code});   // get url data
       if(data && data._id) {
-        response.data = data
+        return res.status(200).send({data: data.originalUrl, message: "Url found"}) // return response if url found
       } else {
-        response.status = 404
-        response.message = "No url found"
+        return res.status(404).send({data: {}, message: "No url found"}) // return response if url not found
       }
   } catch (e) {
-    response.status = 500
-    response.error = e
+    return res.status(500).send({error: e, message: "Something went wrong"})// return response if error
   }
-  return response;  // return response to router
 }
 
 // function for create new url
-export const createUrl = async (request) => {
-  const response = {status: 200}
+export const createUrl = async (req, res) => {
   try {
-    const validate = await urlValidation(request)  // validate request params
-    let alreadyExist = await Urls.findOne({originalUrl: validate.originalUrl})  // check already exists with same url
+    const request = req.body;
+    const baseUrl = req.protocol + '://' + req.get('host')
+    let alreadyExist = await Urls.findOne({originalUrl: request.originalUrl})  // check already exists with same url
     if(alreadyExist && alreadyExist._id) {
-      response.status = 500
-      response.data = alreadyExist
-      response.message = "Url already exists"  // return response if already exists
+      return res.status(409).send({data: alreadyExist, message: "Url already exists"})  // return response if already exists
     } else {
       let urlCode = shortId.generate();
-      let shortUrl = request.baseUrl + "/" + urlCode;
+      let shortUrl = baseUrl + "/" + urlCode;
       const data = new Urls({
-        originalUrl: validate.originalUrl,
+        originalUrl: request.originalUrl,
         shortUrl,
         code: urlCode
       }); // create object for urls
       let urlData = await data.save();  // save the data
-      response.data = urlData
+      return res.status(201).send({data: urlData, message: "Url successfully generated"}) // return response after data creation
     }
   } catch (e) {
-    response.status = 500
-    response.error = e
-  }
-  return response;  // return response
+    return res.status(500).send({error: e, message: "Something went wrong"})
+  } 
 }
 
