@@ -7,7 +7,7 @@
 * [Setup](#setup)
 
 ## General info
-This project contains api for generating short url with authentication
+This project contains api for generating short url with authentication. This project have Register and login apis for authentication with JWT token to make it secure. Api for saving url in database and fetching short url from database. These apis having authorization according to roles, which are maintained on th registration. This project is having swagger documentation which contains all the apis.
 	
 ## Technologies
 Project is created with:
@@ -33,12 +33,13 @@ Create .env file and add following variable in it:
 PORT=<PORT>
 MONGOSERVER=<MONGOSERVER IP>
 DATABASE=<my_database>
+TOKEN_SECRET=<my_token>  // for jwt authentication
 ```
 
 To run this project, install it locally using npm:
 
 ```
-$ cd /url_shortner/apis
+$ cd /url_shortner_api
 $ npm install
 $ npm run build
 $ npm start
